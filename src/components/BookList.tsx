@@ -1,7 +1,8 @@
-import {useDeferredValue, useEffect, useState} from 'react';
-import {Alert, Box, CircularProgress, Paper, TextField, Typography} from '@mui/material';
+import {useDeferredValue, useState} from 'react';
+import {Alert, Box, CircularProgress, Paper, TextField} from '@mui/material';
+import {useQuery} from '@tanstack/react-query';
 import {searchBooks, searchBooksBySubject} from '../api/openLibraryApi';
-import {BookSummary, SearchResult} from '../types/bookTypes';
+import {BookSummary} from '../types/bookTypes';
 import BookCard from './BookCard';
 
 type Props = {
@@ -12,49 +13,28 @@ type Props = {
 };
 
 const BookList = ({query = 'javascript', subject, page = 1, limit = 20}: Props) => {
-    const [books, setBooks] = useState<BookSummary[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [titleFilter, setTitleFilter] = useState('');
     const deferredTitleFilter = useDeferredValue(titleFilter);
+    const queryKey = subject
+        ? ['books', 'subject', subject, page, limit]
+        : ['books', 'search', query, page, limit];
 
-    useEffect(() => {
-        let mounted = true;
-        setLoading(true);
-        setError(null);
+    const {data, isLoading, isError, error} = useQuery({
+        queryKey,
+        queryFn: () => subject
+            ? searchBooksBySubject(subject, page, limit)
+            : searchBooks(query, page, limit),
+    });
 
-        let request: Promise<SearchResult>;
-        if (subject) {
-            request = searchBooksBySubject(subject, page, limit);
-        } else {
-            request = searchBooks(query, page, limit);
-        }
-
-        request
-            .then((r) => {
-                if (!mounted) return;
-                setBooks(r.docs || []);
-            })
-            .catch((e) => {
-                if (!mounted) return;
-                setError(String(e));
-            })
-            .finally(() => {
-                if (mounted) setLoading(false);
-            });
-
-        return () => {
-            mounted = false;
-        };
-    }, [query, subject, page, limit]);
+    const books: BookSummary[] = data?.docs ?? [];
 
     const normalizedFilter = deferredTitleFilter.trim().toLowerCase();
     const filteredBooks = books.filter((book) =>
         book.title.toLowerCase().includes(normalizedFilter)
     );
 
-    if (loading) return <CircularProgress/>;
-    if (error) return <Alert severity="error">{error}</Alert>;
+    if (isLoading) return <CircularProgress/>;
+    if (isError) return <Alert severity="error">{String(error)}</Alert>;
 
     return (
         <>

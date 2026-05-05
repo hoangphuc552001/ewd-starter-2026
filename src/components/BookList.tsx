@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Alert, Box, CircularProgress, Paper } from '@mui/material';
-import { searchBooks } from '../api/openLibraryApi';
-import { BookSummary } from '../types/bookTypes';
+import { searchBooks, searchBooksBySubject } from '../api/openLibraryApi';
+import { BookSummary, SearchResult } from '../types/bookTypes';
 import BookCard from './BookCard';
 
 type Props = {
   query?: string;
+  subject?: string;
   page?: number;
   limit?: number;
 };
 
-const BookList = ({ query = 'javascript', page = 1, limit = 20 }: Props) => {
+const BookList = ({ query = 'javascript', subject, page = 1, limit = 20 }: Props) => {
   const [books, setBooks] = useState<BookSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +19,16 @@ const BookList = ({ query = 'javascript', page = 1, limit = 20 }: Props) => {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    searchBooks(query, page, limit)
+    setError(null);
+
+    let request: Promise<SearchResult>;
+    if (subject){
+        request = searchBooksBySubject(subject, page, limit);
+    }else{
+        request = searchBooks(query, page, limit);
+    }
+
+    request
       .then((r) => {
         if (!mounted) return;
         setBooks(r.docs || []);
@@ -34,7 +44,7 @@ const BookList = ({ query = 'javascript', page = 1, limit = 20 }: Props) => {
     return () => {
       mounted = false;
     };
-  }, [query, page, limit]);
+  }, [query, subject, page, limit]);
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;

@@ -12,6 +12,9 @@ const SiteHeader = () => {
           <Button component={RouterLink} to="/" color="inherit">
             Home
           </Button>
+          <Button component={RouterLink} to="/science-fiction" color="inherit">
+            SCIFI
+          </Button>
         </Box>
       </Toolbar>
     </AppBar>

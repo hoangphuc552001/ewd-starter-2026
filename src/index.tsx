@@ -4,6 +4,7 @@ import { Box, Container } from '@mui/material';
 import SiteHeader from './components/SiteHeader';
 import HomePage from './pages/HomePage';
 import BookDetailsPage from './pages/BookDetailsPage';
+import ScienceFictionPage from './pages/ScienceFictionPage';
 
 
 
@@ -15,6 +16,7 @@ const App= () => {
           <Container component="main" sx={{ py: 4 }}>
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/science-fiction" element={<ScienceFictionPage />} />
               <Route path="/books/:id" element={<BookDetailsPage />} />
             </Routes>
           </Container>

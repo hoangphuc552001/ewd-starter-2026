@@ -5,7 +5,12 @@ const COVERS = 'https://covers.openlibrary.org';
 
 export const searchBooks = (query: string, page = 1, limit = 20) => {
   const url = `${BASE}/search.json?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`;
-  return fetch(url).then((res) => res.json() );
+  return fetch(url).then((res) => res.json() as Promise<SearchResult>);
+};
+
+export const searchBooksBySubject = (subject: string, page = 1, limit = 20) => {
+  const url = `${BASE}/search.json?subject=${encodeURIComponent(subject)}&page=${page}&limit=${limit}`;
+  return fetch(url).then((res) => res.json() as Promise<SearchResult>);
 };
 
 export const coverUrl = (coverId: number | undefined, size: 'S' | 'M' | 'L' = 'M') => {
